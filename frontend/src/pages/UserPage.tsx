@@ -12,6 +12,10 @@ export default function UserPage() {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  }
   useEffect(() => {
     if (!token) return;
     const payload = JSON.parse(atob(token.split(".")[1]));
@@ -31,6 +35,9 @@ export default function UserPage() {
     <div className="container mt-5">
       <h2>Panel użytkownika</h2>
       <p>Witaj, {user.username}</p>
+      <button className="btn btn-outline-danger" onClick={logout}>
+        Wyloguj
+      </button>
     </div>
   );
 }
