@@ -28,19 +28,16 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         
-        {/* jeśli trzeba zmienić hasło */}
         <Route
           path="/change-password"
           element={payload?.mustChangePassword ? <ChangePasswordPage /> : <Navigate to="/" />}
         />
 
-        {/* panel admin */}
         <Route
           path="/admin"
           element={payload?.role === "ADMIN" ? <AdminPage /> : <Navigate to="/" />}
         />
 
-        {/* panel zwykłego użytkownika */}
         <Route
           path="/user"
           element={payload?.role === "USER" ? <UserPage /> : <Navigate to="/" />}

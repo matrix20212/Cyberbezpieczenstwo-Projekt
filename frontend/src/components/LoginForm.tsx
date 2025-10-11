@@ -17,7 +17,16 @@ export default function LoginForm() {
     const data = await res.json();
     if (res.ok) {
       localStorage.setItem("token", data.token);
-      window.location.href = "/admin";
+      if(data.mustChangePassword == true){
+        window.location.href = "/change-password";
+      } else {
+        if(data.role == "ADMIN"){
+          window.location.href = "/admin";
+        }
+        if(data.role == "USER"){
+          window.location.href = "/user";
+        }
+      }
     } else {
       setError(data.error || "Błąd logowania");
     }
