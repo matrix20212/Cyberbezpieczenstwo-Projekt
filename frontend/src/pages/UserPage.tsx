@@ -16,6 +16,11 @@ export default function UserPage() {
     localStorage.removeItem("token");
     window.location.href = "/";
   }
+
+  function changePassword() {
+    window.location.href = "/change-password";
+  }
+
   useEffect(() => {
     if (!token) return;
     const payload = JSON.parse(atob(token.split(".")[1]));
@@ -37,6 +42,9 @@ export default function UserPage() {
       <p>Witaj, {user.username}</p>
       <button className="btn btn-outline-danger" onClick={logout}>
         Wyloguj
+      </button>
+      <button className="btn btn-primary" onClick={changePassword}>
+        Zmień hasło
       </button>
     </div>
   );

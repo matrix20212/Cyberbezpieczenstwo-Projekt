@@ -10,8 +10,8 @@ export default function FirstChangePasswordPage() {
     e.preventDefault();
     if (newPass !== newPass2) { alert("Hasła różnią się"); return; }
 
-    const username = JSON.parse(atob((token || "").split(".")[1])).username; // quick parse
-
+    const username = JSON.parse(atob((token || "").split(".")[1])).username;
+    
     const res = await fetch("http://localhost:3000/auth/change-password", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
