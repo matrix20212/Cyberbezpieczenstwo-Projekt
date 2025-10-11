@@ -7,6 +7,10 @@ async function main() {
   const username = "ADMIN";
   const password = "admin123";
   const hash = await bcrypt.hash(password, 10);
+  const role = "ADMIN";
+  const fullName = "aDmIn";
+  const mustChangePassword = true;
+  const expiry = null;
 
   const existing = await prisma.user.findUnique({ where: { username } });
   if (existing) {
@@ -16,11 +20,13 @@ async function main() {
 
   await prisma.user.create({
     data: {
-      username,
-      password: hash,
-      role: "ADMIN",
-      blocked: false,
-    },
+        username,
+        password: hash,
+        role,
+        fullName,
+        mustChangePassword,
+        passwordExpiresAt: expiry || null
+      }
   });
 
   console.log("Utworzono konto ADMIN");

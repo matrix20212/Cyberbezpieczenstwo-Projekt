@@ -1,16 +1,7 @@
 import { z } from "zod";
 
-export const passwordSchema = z
-  .object({
-    oldPassword: z.string().min(6),
-    newPassword: z
-      .string()
-      .min(8)
-      .regex(/[A-Z]/, "Musi zawierać dużą literę")
-      .regex(/[0-9]/, "Musi zawierać cyfrę")
-      .regex(/[^A-Za-z0-9]/, "Musi zawierać znak specjalny"),
-  })
-  .refine((data) => data.oldPassword !== data.newPassword, {
-    message: "Nowe hasło musi różnić się od starego",
-    path: ["newPassword"],
-  });
+export const changePasswordSchema = z.object({
+  username: z.string().min(1, "Login jest wymagany"),
+  oldPassword: z.string().min(1, "Stare hasło jest wymagane"),
+  newPassword: z.string().min(14, "Hasło musi mieć co najmniej 14 znaków"),
+});

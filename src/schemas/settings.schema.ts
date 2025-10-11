@@ -1,0 +1,9 @@
+import { z } from "zod";
+
+export const settingsSchema = z.object({
+  minLength: z.number().min(6).max(64).default(14),
+  requireDigit: z.boolean().default(true),
+  requireUppercase: z.boolean().default(false),
+  requireSpecial: z.boolean().default(false),
+  passwordExpiryDays: z.number().min(1).max(365).default(90)
+});

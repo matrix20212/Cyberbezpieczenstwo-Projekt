@@ -1,15 +1,23 @@
 import bcrypt from "bcrypt";
-import { PrismaClient } from "../../generated/prisma";
-
-const prisma = new PrismaClient();
+import { prisma } from "../prisma";
 
 export const userService = {
   async createUser(username: string, password: string, role = "USER", fullName?: string) {
     const hash = await bcrypt.hash(password, 10);
+    const settings = await prisma.settings.findFirst();
+    const expiry = settings ? new Date(Date.now() + settings.passwordExpiryDays * 24*3600*1000) : null;
     return prisma.user.create({
-      data: { username, password: hash, role, fullName },
+      data: {
+        username,
+        password: hash,
+        role,
+        fullName,
+        mustChangePassword: true,
+        passwordExpiresAt: expiry || null
+      }
     });
   },
+
 
   async getUser(username: string) {
     return prisma.user.findUnique({ where: { username } });
