@@ -24,7 +24,7 @@ export const authController = {
 
     const expired = user.passwordExpiresAt ? (new Date() > user.passwordExpiresAt) : false;
 
-    const token = jwt.sign({ username: user.username, role: user.role, mustChangePassword: user.mustChangePassword }, SECRET, { expiresIn: "2h" });
+    const token = jwt.sign({ username: user.username, role: user.role, mustChangePassword: user.mustChangePassword || expired }, SECRET, { expiresIn: "2h" });
 
     return res.json({
       token,
