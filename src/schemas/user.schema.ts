@@ -24,7 +24,7 @@ export const userResponseSchema = z.object({
   role: z.enum(["USER", "ADMIN"]),
   blocked: z.boolean(),
   mustChangePassword: z.boolean(),
-  passwordExpiresAt: z.string().nullable(),
-  createdAt: z.string(),
-  updatedAt: z.string()
+  createdAt: z.union([z.string(), z.date()]),
+  updatedAt: z.union([z.string(), z.date()]),
+  passwordExpiresAt: z.union([z.string(), z.date()]).nullable()
 });
