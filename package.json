@@ -1,0 +1,19 @@
+{
+  "name": "cyberbezpieczenstwo-projekt",
+  "version": "1.0.0",
+  "description": "Projekt na cyberbezpieczenstwo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matrix20212/Cyberbezpieczenstwo-Projekt.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/matrix20212/Cyberbezpieczenstwo-Projekt/issues"
+  },
+  "homepage": "https://github.com/matrix20212/Cyberbezpieczenstwo-Projekt#readme"
+}
