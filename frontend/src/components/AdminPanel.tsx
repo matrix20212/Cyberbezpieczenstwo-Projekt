@@ -1,0 +1,39 @@
+import { useEffect, useState } from "react";
+import UserTable from "./UserTable";
+import AddUserForm from "./AddUserForm";
+
+export default function AdminPanel() {
+  const [users, setUsers] = useState([]);
+
+  async function loadUsers() {
+    const token = localStorage.getItem("token");
+    const res = await fetch("http://localhost:3000/admin/users", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    setUsers(data);
+  }
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  }
+
+  return (
+    <>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>⚙️ Panel administratora</h2>
+        <button className="btn btn-outline-danger" onClick={logout}>
+          Wyloguj
+        </button>
+      </div>
+
+      <UserTable users={users} reload={loadUsers} />
+      <AddUserForm reload={loadUsers} />
+    </>
+  );
+}
