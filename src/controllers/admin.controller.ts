@@ -12,13 +12,12 @@ export const adminController = {
   async listUsers(req: Request, res: Response) {
     try {
       const users = await prisma.user.findMany();
-      const safeUsers = users.map(userResponseSchema.parse);
+      const safeUsers = users.map((u: typeof users[number]) => userResponseSchema.parse(u));
       res.json(safeUsers);
     } catch (err) {
       res.status(500).json({ message: "Błąd serwera", error: (err as Error).message });
     }
   },
-
 
   async addUser(req: Request, res: Response) {
     try {
