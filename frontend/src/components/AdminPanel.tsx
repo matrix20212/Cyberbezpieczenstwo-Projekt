@@ -33,7 +33,6 @@ export default function AdminPanel() {
         </button>
       </div>
 
-      <UserTable users={users} reload={loadUsers} />
       <AddUserForm reload={loadUsers} />
         <div className="row">
         <div className="col-md-8">
