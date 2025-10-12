@@ -136,5 +136,43 @@ export const adminController = {
     } catch (err) {
       res.status(500).json({ message: "Błąd serwera", error: (err as Error).message });
     }
+  },
+
+  async updateUserAdmin(req: Request, res: Response) {
+  try {
+    const { username } = req.params;
+
+    const parsed = updateUserSchema.safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json(parsed.error.format());
+
+    const data = parsed.data;
+
+    const existing = await prisma.user.findUnique({ where: { username } });
+    if (!existing)
+      return res.status(404).json({ message: "Użytkownik nie istnieje" });
+
+    let updateData: any = { ...data };
+    if (data.password) {
+      const hash = await bcrypt.hash(data.password, 10);
+      updateData.password = hash;
+      updateData.mustChangePassword = true;
+    }
+    
+    const updated = await prisma.user.update({
+      where: { username },
+      data: updateData,
+    });
+
+    res.json({ message: "Zaktualizowano użytkownika", user: updated });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        message: "Błąd serwera",
+        error: (err as Error).message,
+      });
+    }
   }
+
 };

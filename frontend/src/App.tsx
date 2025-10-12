@@ -29,8 +29,13 @@ export default function App() {
         <Route path="/" element={<LoginPage />} />
         
         <Route
-          path="/change-password"
+          path="/first-change-password"
           element={payload?.mustChangePassword ? <ChangePasswordPage /> : <Navigate to="/" />}
+        />
+
+        <Route
+          path="/change-password"
+          element={<ChangePasswordPage />}
         />
 
         <Route

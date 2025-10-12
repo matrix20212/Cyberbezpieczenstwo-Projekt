@@ -2,7 +2,6 @@ import { prisma } from "../prisma";
 import bcrypt from "bcrypt";
 
 export function validatePasswordAgainstPolicy(password: string, settings: any | null) {
-  // settings may be null -> use defaults
   const minLength = settings?.minLength ?? 14;
   const requireDigit = settings?.requireDigit ?? true;
   const requireUpper = settings?.requireUppercase ?? false;

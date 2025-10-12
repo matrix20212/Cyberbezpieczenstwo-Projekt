@@ -8,6 +8,7 @@ router.use(authMiddleware, isAdmin);
 
 router.get("/users", adminController.listUsers);
 router.post("/users", adminController.addUser);
+router.put("/users/:username", adminController.updateUserAdmin);
 router.put("/block/:username", adminController.blockUser);
 router.delete("/users/:username", adminController.deleteUser);
 

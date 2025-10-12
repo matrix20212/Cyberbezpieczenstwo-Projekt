@@ -18,7 +18,7 @@ export default function LoginForm() {
     if (res.ok) {
       localStorage.setItem("token", data.token);
       if(data.mustChangePassword == true){
-        window.location.href = "/change-password";
+        window.location.href = "/first-change-password";
       } else {
         if(data.role == "ADMIN"){
           window.location.href = "/admin";
