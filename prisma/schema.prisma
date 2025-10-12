@@ -37,6 +37,7 @@ model Settings {
   id                Int     @id @default(autoincrement())
   minLength         Int     @default(14)
   requireDigit      Boolean @default(true)
+  requireLowercase  Boolean @default(true)
   requireUppercase  Boolean @default(false)
   requireSpecial    Boolean @default(false)
   passwordExpiryDays Int    @default(90)

@@ -60,11 +60,11 @@ export default function AddUserForm({ reload }: Props) {
           <input
             type="password"
             className="form-control"
-            placeholder="Hasło (min 14 znaków)"
+            placeholder="Hasło (min 6 znaków)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minLength={14}
+            minLength={6}
           />
         </div>
         <div className="col-md-2">

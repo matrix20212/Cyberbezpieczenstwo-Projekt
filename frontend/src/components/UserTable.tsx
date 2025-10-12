@@ -10,6 +10,7 @@ export default function UserTable({ users, reload }: Props) {
   const [editingUser, setEditingUser] = useState<any | null>(null);
   const [formData, setFormData] = useState({
     username: "",
+    fullName: "",
     role: "USER",
     blocked: false,
     newPassword: "",
@@ -19,6 +20,7 @@ export default function UserTable({ users, reload }: Props) {
     setEditingUser(u);
     setFormData({
       username: u.username,
+      fullName: u.fullName,
       role: u.role,
       blocked: u.blocked,
       newPassword: "",
@@ -47,7 +49,7 @@ export default function UserTable({ users, reload }: Props) {
 
     const body: any = {
       username: formData.username,
-      fullName: formData,
+      fullName: formData.fullName,
       blocked: formData.blocked,
     };
 
@@ -91,7 +93,7 @@ export default function UserTable({ users, reload }: Props) {
             users.map((u) => (
               <tr key={u.id}>
                 <td>{u.id}</td>
-                <td>{u.username}</td>
+                <td>{u.fullName}</td>
                 <td>{u.role}</td>
                 <td>{u.blocked ? "✅" : "❌"}</td>
                 <td>
@@ -141,6 +143,19 @@ export default function UserTable({ users, reload }: Props) {
                     value={formData.username}
                     onChange={(e) =>
                       setFormData({ ...formData, username: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label>Pełna nazwa użytkownika</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={formData.fullName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullName: e.target.value })
                     }
                     required
                   />

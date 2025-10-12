@@ -3,14 +3,14 @@ import { z } from "zod";
 export const createUserSchema = z.object({
   username: z.string().min(3, "Login musi mieć minimum 3 znaki"),
   fullName: z.string().optional(),
-  password: z.string().min(14, "Hasło musi mieć minimum 14 znaków"),
+  password: z.string(),
   role: z.enum(["USER", "ADMIN"]).default("USER"),
   blocked: z.boolean().default(false)
 });
 
 export const updateUserSchema = z.object({
   fullName: z.string().optional(),
-  password: z.string().min(14).optional(),
+  password: z.string().optional(),
   role: z.enum(["USER", "ADMIN"]).optional(),
   blocked: z.boolean().optional(),
   mustChangePassword: z.boolean().optional(),

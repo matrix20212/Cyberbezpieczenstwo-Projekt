@@ -2,15 +2,27 @@ import { prisma } from "../prisma";
 import bcrypt from "bcrypt";
 
 export function validatePasswordAgainstPolicy(password: string, settings: any | null) {
-  const minLength = settings?.minLength ?? 14;
+  const minLength = settings?.minLength ?? 6;
   const requireDigit = settings?.requireDigit ?? true;
   const requireUpper = settings?.requireUppercase ?? false;
+  const requireLower = settings?.requireLowercase ?? true;
   const requireSpecial = settings?.requireSpecial ?? false;
 
-  if (password.length < minLength) return `Hasło musi mieć co najmniej ${minLength} znaków`;
-  if (requireDigit && !/[0-9]/.test(password)) return "Hasło musi zawierać co najmniej jedną cyfrę";
-  if (requireUpper && !/[A-Z]/.test(password)) return "Hasło musi zawierać wielką literę";
-  if (requireSpecial && !/[^A-Za-z0-9]/.test(password)) return "Hasło musi zawierać znak specjalny";
+  if (password.length < minLength) 
+    return `Hasło musi mieć co najmniej ${minLength} znaków`;
+
+  if (requireDigit && !/[0-9]/.test(password)) 
+    return "Hasło musi zawierać co najmniej jedną cyfrę";
+
+  if (requireUpper && !/[A-Z]/.test(password)) 
+    return "Hasło musi zawierać wielką literę";
+
+  if (requireLower && !/[a-z]/.test(password)) 
+    return "Hasło musi zawierać małą literę";
+
+  if (requireSpecial && !/[^A-Za-z0-9]/.test(password)) 
+    return "Hasło musi zawierać znak specjalny";
+
   return null;
 }
 
