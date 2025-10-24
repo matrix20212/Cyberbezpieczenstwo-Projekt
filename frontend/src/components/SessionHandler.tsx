@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const SESSION_TIMEOUT_SECONDS = 1 * 60; //5 minut
+const SESSION_TIMEOUT_SECONDS = 5 * 60; //5 minut
 
 export default function SessionHandler({ children }: { children: React.ReactNode }) {
   const [timeLeft, setTimeLeft] = useState(SESSION_TIMEOUT_SECONDS);
