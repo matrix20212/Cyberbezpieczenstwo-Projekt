@@ -9,29 +9,70 @@ import { logActivity } from "../utils/logger";
 const prisma = new PrismaClient();
 const SECRET = process.env.JWT_SECRET || "changeme";
 
+const LOGIN_LIMIT = 3;
+const LOCK_DURATION_MINUTES = 15;
+
 export const authController = {
   async login(req: Request, res: Response) {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json(parsed.error.format());
 
     const { username, password } = parsed.data;
-
     const user = await prisma.user.findUnique({ where: { username } });
+
     if (!user) {
       await logActivity(username, "login", false, "Niepoprawny login lub hasło");
       return res.status(400).json({ error: "Login lub hasło niepoprawny" });
     }
 
-    if (user.blocked) {
+    if (user.blockedUntil && user.blockedUntil > new Date()) {
+      const msLeft = user.blockedUntil.getTime() - Date.now();
+      const minutes = Math.floor(msLeft / 60000);
+      const seconds = Math.floor((msLeft % 60000) / 1000);
       await logActivity(username, "login", false, "Konto zablokowane");
-      return res.status(403).json({ error: "Konto jest zablokowane" });
+      return res.status(403).json({
+        error: `Konto zablokowane. Odblokowanie za ${minutes} min ${seconds} sek`,
+        blockedUntil: user.blockedUntil
+      });
+    }
+
+    if (user.blockedUntil && user.blockedUntil <= new Date()) {
+      await prisma.user.update({
+        where: { username },
+        data: { failedAttempts: 0, blockedUntil: null }
+      });
     }
 
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
-      await logActivity(username, "login", false, "Niepoprawne hasło");
-      return res.status(400).json({ error: "Login lub hasło niepoprawny" });
+      const failedAttempts = user.failedAttempts + 1;
+      const dataUpdate: any = { failedAttempts };
+
+      let msg = "Login lub hasło niepoprawny";
+      let blockedUntil: Date | null = null;
+
+      if (failedAttempts >= LOGIN_LIMIT) {
+        blockedUntil = new Date(Date.now() + LOCK_DURATION_MINUTES * 60 * 1000);
+        dataUpdate.blockedUntil = blockedUntil;
+        const msLeft = blockedUntil.getTime() - Date.now();
+        const minutes = Math.floor(msLeft / 60000);
+        const seconds = Math.floor((msLeft % 60000) / 1000);
+        msg = `Przekroczono limit prób logowania. Konto zablokowane na ${minutes} min ${seconds} sek`;
+      }
+
+      await prisma.user.update({
+        where: { username },
+        data: dataUpdate
+      });
+
+      await logActivity(username, "login", false, `Niepoprawne hasło (próba ${failedAttempts})`);
+      return res.status(400).json({ error: msg, blockedUntil });
     }
+
+    await prisma.user.update({
+      where: { username },
+      data: { failedAttempts: 0, blockedUntil: null }
+    });
 
     const expired = user.passwordExpiresAt ? new Date() > user.passwordExpiresAt : false;
 
@@ -39,7 +80,7 @@ export const authController = {
       {
         username: user.username,
         role: user.role,
-        mustChangePassword: user.mustChangePassword || expired,
+        mustChangePassword: user.mustChangePassword || expired
       },
       SECRET,
       { expiresIn: "2h" }
@@ -50,7 +91,7 @@ export const authController = {
     return res.json({
       token,
       mustChangePassword: user.mustChangePassword || expired,
-      role: user.role,
+      role: user.role
     });
   },
 

@@ -1,9 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [blockedUntil, setBlockedUntil] = useState<Date | null>(null);
+  const [countdown, setCountdown] = useState<string>("");
+
+  useEffect(() => {
+    if (!blockedUntil) return;
+    const interval = setInterval(() => {
+      const msLeft = blockedUntil.getTime() - Date.now();
+      if (msLeft <= 0) {
+        setBlockedUntil(null);
+        setCountdown("");
+        clearInterval(interval);
+      } else {
+        const minutes = Math.floor(msLeft / 60000);
+        const seconds = Math.floor((msLeft % 60000) / 1000);
+        setCountdown(`${minutes} min ${seconds} sek`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [blockedUntil]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -15,20 +35,22 @@ export default function LoginForm() {
     });
 
     const data = await res.json();
+
     if (res.ok) {
       localStorage.setItem("token", data.token);
-      if(data.mustChangePassword == true){
+      if (data.mustChangePassword) {
         window.location.href = "/first-change-password";
       } else {
-        if(data.role == "ADMIN"){
-          window.location.href = "/admin";
-        }
-        if(data.role == "USER"){
-          window.location.href = "/user";
-        }
+        if (data.role === "ADMIN") window.location.href = "/admin";
+        if (data.role === "USER") window.location.href = "/user";
       }
     } else {
-      setError(data.error || "Błąd logowania");
+      if (data.blockedUntil) {
+        setError("Konto zablokowane");
+        setBlockedUntil(new Date(data.blockedUntil));
+      } else {
+        setError(data.error || "Błąd logowania");
+      }
     }
   }
 
@@ -53,9 +75,15 @@ export default function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <button className="btn btn-primary w-100" type="submit">Zaloguj</button>
+        <button className="btn btn-primary w-100" type="submit" disabled={!!blockedUntil}>
+          Zaloguj
+        </button>
       </form>
-      {error && <p className="text-danger mt-3 text-center">{error}</p>}
+      {error && (
+        <p className="text-danger mt-3 text-center">
+          {error} {countdown && ` - odblokowanie za ${countdown}`}
+        </p>
+      )}
     </div>
   );
 }
