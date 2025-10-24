@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import UserTable from "./UserTable";
 import AddUserForm from "./AddUserForm";
 import SettingsPanel from "./SettingsPanel";
+import ActivityLogPanel from "./ActivityLogPanel";
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -35,12 +36,15 @@ export default function AdminPanel() {
 
       <AddUserForm reload={loadUsers} />
         <div className="row">
-        <div className="col-md-8">
-            <UserTable users={users} reload={loadUsers} />
-        </div>
-        <div className="col-md-4">
-            <SettingsPanel reload={() => {}} />
-        </div>
+          <div className="col-md-8">
+              <UserTable users={users} reload={loadUsers} />
+          </div>
+          <div className="col-md-4">
+              <SettingsPanel reload={() => {}} />
+          </div>
+          <div className="mt-4">
+            <ActivityLogPanel />
+          </div>
         </div>
     </>
   );
