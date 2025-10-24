@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
 import UserPage from "./pages/UserPage";
 import ChangePasswordPage from "./pages/FirstChangePasswordPage";
+import SessionHandler from "./components/SessionHandler";
 
 interface TokenPayload {
   username: string;
@@ -25,29 +27,31 @@ export default function App() {
 
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<LoginPage />} />
-        
-        <Route
-          path="/first-change-password"
-          element={payload?.mustChangePassword ? <ChangePasswordPage /> : <Navigate to="/" />}
-        />
+      <SessionHandler>
+        <Routes>
+          <Route path="/" element={<LoginPage />} />
+          
+          <Route
+            path="/first-change-password"
+            element={payload?.mustChangePassword ? <ChangePasswordPage /> : <Navigate to="/" />}
+          />
 
-        <Route
-          path="/change-password"
-          element={<ChangePasswordPage />}
-        />
+          <Route
+            path="/change-password"
+            element={<ChangePasswordPage />}
+          />
 
-        <Route
-          path="/admin"
-          element={payload?.role === "ADMIN" ? <AdminPage /> : <Navigate to="/" />}
-        />
+          <Route
+            path="/admin"
+            element={payload?.role === "ADMIN" ? <AdminPage /> : <Navigate to="/" />}
+          />
 
-        <Route
-          path="/user"
-          element={payload?.role === "USER" ? <UserPage /> : <Navigate to="/" />}
-        />
-      </Routes>
+          <Route
+            path="/user"
+            element={payload?.role === "USER" ? <UserPage /> : <Navigate to="/" />}
+          />
+        </Routes>
+      </SessionHandler>
     </Router>
   );
 }
