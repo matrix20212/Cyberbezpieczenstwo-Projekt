@@ -17,4 +17,6 @@ router.put("/settings", adminController.updateSettings);
 
 router.get("/logs", adminController.getLogs);
 
+router.post("/users/:username/generate-otp", adminController.generateOneTimePassword);
+
 export default router;

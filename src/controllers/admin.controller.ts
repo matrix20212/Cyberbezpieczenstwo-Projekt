@@ -254,4 +254,32 @@ export const adminController = {
     }
   },
   
+  async generateOneTimePassword(req: Request, res: Response) {
+  const { username } = req.params;
+  const user = await prisma.user.findUnique({ where: { username } });
+
+  if (!user) {
+    return res.status(404).json({ error: "Użytkownik nie znaleziony" });
+  }
+
+  const a = user.username.length;
+  const x = Math.floor(Math.random() * 100) + 1;
+  const result = a / x;
+
+  // przekształcenie wyniku w ciąg znaków
+  const otpPlain = Math.abs(result).toString(36).substring(2, 8);
+  const hashed = await bcrypt.hash(otpPlain, 10);
+
+  await prisma.user.update({
+    where: { username },
+    data: {
+      password: hashed,
+      mustChangePassword: true,
+    },
+  });
+
+  return res.json({
+    message: "Hasło jednorazowe wygenerowane",
+    oneTimePassword: otpPlain,
+  })},
 };

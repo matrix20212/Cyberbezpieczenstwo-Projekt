@@ -76,6 +76,21 @@ export default function UserTable({ users, reload }: Props) {
     }
   }
 
+  async function handleGenerateOTP(username: string) {
+    const res = await fetch(`http://localhost:3000/admin/users/${username}/generate-otp`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      alert(`Hasło jednorazowe dla ${username}: ${data.oneTimePassword}`);
+    } else {
+      alert(data.error || "Błąd podczas generowania hasła");
+    }
+  }
+
+
   return (
     <div>
       <table className="table table-striped">
@@ -114,6 +129,12 @@ export default function UserTable({ users, reload }: Props) {
                     onClick={() => handleDelete(u.username)}
                   >
                     Usuń
+                  </button>
+                  <button
+                    className="btn btn-sm btn-info me-2"
+                    onClick={() => handleGenerateOTP(u.username)}
+                  >
+                    Jednorazowe hasło
                   </button>
                 </td>
               </tr>
