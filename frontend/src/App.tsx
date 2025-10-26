@@ -9,7 +9,7 @@ import SessionHandler from "./components/SessionHandler";
 
 interface TokenPayload {
   username: string;
-  role: "ADMIN" | "USER";
+  role: "ADMIN" | "USER" | "MANAGER";
   mustChangePassword?: boolean;
 }
 
@@ -48,7 +48,7 @@ export default function App() {
 
           <Route
             path="/user"
-            element={payload?.role === "USER" ? <UserPage /> : <Navigate to="/" />}
+            element={payload?.role === "USER" || "MANAGER" ? <UserPage /> : <Navigate to="/" />}
           />
         </Routes>
       </SessionHandler>

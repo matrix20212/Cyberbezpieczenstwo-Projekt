@@ -43,6 +43,7 @@ export default function LoginForm() {
       } else {
         if (data.role === "ADMIN") window.location.href = "/admin";
         if (data.role === "USER") window.location.href = "/user";
+        if (data.role === "MANAGER") window.location.href = "/user";
       }
     } else {
       if (data.blockedUntil) {
