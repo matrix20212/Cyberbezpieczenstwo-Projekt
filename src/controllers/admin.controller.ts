@@ -1,7 +1,11 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { createUserSchema, updateUserSchema, userResponseSchema } from "../schemas/user.schema";
+import {
+  createUserSchema,
+  updateUserSchema,
+  userResponseSchema,
+} from "../schemas/user.schema";
 import { settingsSchema } from "../schemas/settings.schema";
 import { logActivity } from "../utils/logger";
 
@@ -11,7 +15,9 @@ export const adminController = {
   async listUsers(req: Request, res: Response) {
     try {
       const users = await prisma.user.findMany();
-      const safeUsers = users.map((u: typeof users[number]) => userResponseSchema.parse(u));
+      const safeUsers = users.map((u: (typeof users)[number]) =>
+        userResponseSchema.parse(u)
+      );
 
       await logActivity(
         (req as any).user?.username || "ADMIN",
@@ -28,7 +34,9 @@ export const adminController = {
         false,
         "Błąd przy pobieraniu listy użytkowników"
       );
-      res.status(500).json({ message: "Błąd serwera", error: (err as Error).message });
+      res
+        .status(500)
+        .json({ message: "Błąd serwera", error: (err as Error).message });
     }
   },
 
@@ -39,8 +47,9 @@ export const adminController = {
 
       const { username, password, role, fullName, blocked } = parsed.data;
 
-      const existing = await prisma.user.findUnique({ where: { username }});
-      if (existing) return res.status(400).json({ error: "Użytkownik istnieje" });
+      const existing = await prisma.user.findUnique({ where: { username } });
+      if (existing)
+        return res.status(400).json({ error: "Użytkownik istnieje" });
 
       const hash = await bcrypt.hash(password, 10);
       const expiryDate = new Date();
@@ -54,8 +63,8 @@ export const adminController = {
           fullName,
           blocked: blocked ?? false,
           mustChangePassword: true,
-          passwordExpiresAt: expiryDate
-        }
+          passwordExpiresAt: expiryDate,
+        },
       });
 
       await logActivity(
@@ -66,7 +75,6 @@ export const adminController = {
       );
 
       res.json(userResponseSchema.parse(user));
-
     } catch (err) {
       await logActivity(
         (req as any).user?.username || "ADMIN",
@@ -74,7 +82,9 @@ export const adminController = {
         false,
         "Błąd przy dodawaniu użytkownika"
       );
-      res.status(500).json({ message: "Błąd serwera", error: (err as Error).message });
+      res
+        .status(500)
+        .json({ message: "Błąd serwera", error: (err as Error).message });
     }
   },
 
@@ -92,7 +102,7 @@ export const adminController = {
 
       const updated = await prisma.user.update({
         where: { username },
-        data: dataToUpdate
+        data: dataToUpdate,
       });
 
       await logActivity(
@@ -110,27 +120,35 @@ export const adminController = {
         false,
         "Błąd przy aktualizacji użytkownika"
       );
-      res.status(500).json({ message: "Błąd serwera", error: (err as Error).message });
+      res
+        .status(500)
+        .json({ message: "Błąd serwera", error: (err as Error).message });
     }
   },
 
   async blockUser(req: Request, res: Response) {
     try {
       const username = req.params.username;
-      const user = await prisma.user.findUnique({ where: { username }});
-      if (!user) return res.status(404).json({ message: "Użytkownik nie istnieje" });
-      if (user.role === "ADMIN") return res.status(403).json({ message: "Nie można blokować administratora" });
+      const user = await prisma.user.findUnique({ where: { username } });
+      if (!user)
+        return res.status(404).json({ message: "Użytkownik nie istnieje" });
+      if (user.role === "ADMIN")
+        return res
+          .status(403)
+          .json({ message: "Nie można blokować administratora" });
 
       const updated = await prisma.user.update({
         where: { username },
-        data: { blocked: !user.blocked }
+        data: { blocked: !user.blocked },
       });
 
       await logActivity(
         (req as any).user?.username || "ADMIN",
         "blockUser",
         true,
-        `${user.blocked ? "Odblokowano" : "Zablokowano"} użytkownika ${username}`
+        `${
+          user.blocked ? "Odblokowano" : "Zablokowano"
+        } użytkownika ${username}`
       );
 
       res.json(userResponseSchema.parse(updated));
@@ -141,18 +159,24 @@ export const adminController = {
         false,
         "Błąd przy blokowaniu użytkownika"
       );
-      res.status(500).json({ message: "Błąd serwera", error: (err as Error).message });
+      res
+        .status(500)
+        .json({ message: "Błąd serwera", error: (err as Error).message });
     }
   },
 
   async deleteUser(req: Request, res: Response) {
     try {
       const username = req.params.username;
-      const user = await prisma.user.findUnique({ where: { username }});
-      if (!user) return res.status(404).json({ message: "Użytkownik nie istnieje" });
-      if (user.role === "ADMIN") return res.status(403).json({ message: "Nie można usunąć administratora" });
+      const user = await prisma.user.findUnique({ where: { username } });
+      if (!user)
+        return res.status(404).json({ message: "Użytkownik nie istnieje" });
+      if (user.role === "ADMIN")
+        return res
+          .status(403)
+          .json({ message: "Nie można usunąć administratora" });
 
-      await prisma.user.delete({ where: { username }});
+      await prisma.user.delete({ where: { username } });
 
       await logActivity(
         (req as any).user?.username || "ADMIN",
@@ -169,7 +193,9 @@ export const adminController = {
         false,
         "Błąd przy usuwaniu użytkownika"
       );
-      res.status(500).json({ message: "Błąd serwera", error: (err as Error).message });
+      res
+        .status(500)
+        .json({ message: "Błąd serwera", error: (err as Error).message });
     }
   },
 
@@ -177,31 +203,77 @@ export const adminController = {
     try {
       let settings = await prisma.settings.findFirst();
       if (!settings) {
-        settings = await prisma.settings.create({ data: {} });
+        settings = await prisma.settings.create({
+          data: {
+            minLength: 14,
+            requireDigit: true,
+            requireUppercase: false,
+            requireLowercase: true,
+            requireSpecial: false,
+            passwordExpiryDays: 90,
+            maxLoginAttempts: 5,
+            lockoutDurationMinutes: 15,
+            sessionTimeoutMinutes: 30,
+          },
+        });
       }
       res.json(settings);
     } catch (err) {
-      res.status(500).json({ message: "Błąd serwera", error: (err as Error).message });
+      res
+        .status(500)
+        .json({ message: "Błąd serwera", error: (err as Error).message });
     }
   },
 
   async updateSettings(req: Request, res: Response) {
     try {
       const parsed = settingsSchema.safeParse(req.body);
-      if (!parsed.success) return res.status(400).json(parsed.error.format());
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "Błąd walidacji",
+          errors: parsed.error.format(),
+        });
+      }
+
+      const {
+        maxLoginAttempts,
+        lockoutDurationMinutes,
+        sessionTimeoutMinutes,
+      } = parsed.data;
+
+      if (maxLoginAttempts > 7) {
+        await logActivity(
+          (req as any).user?.username || "ADMIN",
+          "updateSettings",
+          true,
+          `OSTRZEŻENIE: Ustawiono wysoką liczbę prób logowania (${maxLoginAttempts})`
+        );
+      }
+
+      if (sessionTimeoutMinutes > 60) {
+        await logActivity(
+          (req as any).user?.username || "ADMIN",
+          "updateSettings",
+          true,
+          `OSTRZEŻENIE: Ustawiono długi timeout sesji (${sessionTimeoutMinutes} min)`
+        );
+      }
 
       let settings = await prisma.settings.findFirst();
       if (!settings) {
         settings = await prisma.settings.create({ data: parsed.data });
       } else {
-        settings = await prisma.settings.update({ where: { id: settings.id }, data: parsed.data });
+        settings = await prisma.settings.update({
+          where: { id: settings.id },
+          data: parsed.data,
+        });
       }
 
       await logActivity(
         (req as any).user?.username || "ADMIN",
         "updateSettings",
         true,
-        "Zaktualizowano ustawienia systemu"
+        `Zaktualizowano ustawienia systemu: maxLoginAttempts=${maxLoginAttempts}, lockout=${lockoutDurationMinutes}min, sessionTimeout=${sessionTimeoutMinutes}min`
       );
 
       res.json(settings);
@@ -210,9 +282,11 @@ export const adminController = {
         (req as any).user?.username || "ADMIN",
         "updateSettings",
         false,
-        "Błąd przy aktualizacji ustawień"
+        `Błąd przy aktualizacji ustawień: ${(err as Error).message}`
       );
-      res.status(500).json({ message: "Błąd serwera", error: (err as Error).message });
+      res
+        .status(500)
+        .json({ message: "Błąd serwera", error: (err as Error).message });
     }
   },
 
@@ -238,7 +312,9 @@ export const adminController = {
         false,
         "Błąd przy pobieraniu logów"
       );
-      res.status(500).json({ message: "Błąd serwera", error: (err as Error).message });
+      res
+        .status(500)
+        .json({ message: "Błąd serwera", error: (err as Error).message });
     }
   },
 
@@ -250,36 +326,39 @@ export const adminController = {
       });
       res.json(logs);
     } catch (err) {
-      res.status(500).json({ message: "Błąd serwera", error: (err as Error).message });
+      res
+        .status(500)
+        .json({ message: "Błąd serwera", error: (err as Error).message });
     }
   },
-  
+
   async generateOneTimePassword(req: Request, res: Response) {
-  const { username } = req.params;
-  const user = await prisma.user.findUnique({ where: { username } });
+    const { username } = req.params;
+    const user = await prisma.user.findUnique({ where: { username } });
 
-  if (!user) {
-    return res.status(404).json({ error: "Użytkownik nie znaleziony" });
-  }
+    if (!user) {
+      return res.status(404).json({ error: "Użytkownik nie znaleziony" });
+    }
 
-  const a = user.username.length;
-  const x = Math.floor(Math.random() * 100) + 1;
-  const result = a / x;
+    const a = user.username.length;
+    const x = Math.floor(Math.random() * 100) + 1;
+    const result = a / x;
 
-  // przekształcenie wyniku w ciąg znaków
-  const otpPlain = Math.abs(result).toString(36).substring(2, 8);
-  const hashed = await bcrypt.hash(otpPlain, 10);
+    // przekształcenie wyniku w ciąg znaków
+    const otpPlain = Math.abs(result).toString(36).substring(2, 8);
+    const hashed = await bcrypt.hash(otpPlain, 10);
 
-  await prisma.user.update({
-    where: { username },
-    data: {
-      password: hashed,
-      mustChangePassword: true,
-    },
-  });
+    await prisma.user.update({
+      where: { username },
+      data: {
+        password: hashed,
+        mustChangePassword: true,
+      },
+    });
 
-  return res.json({
-    message: "Hasło jednorazowe wygenerowane",
-    oneTimePassword: otpPlain,
-  })},
+    return res.json({
+      message: "Hasło jednorazowe wygenerowane",
+      oneTimePassword: otpPlain,
+    });
+  },
 };

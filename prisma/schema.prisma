@@ -36,15 +36,18 @@ model PasswordHistory {
 }
 
 model Settings {
-  id                Int     @id @default(autoincrement())
-  minLength         Int     @default(14)
-  requireDigit      Boolean @default(true)
-  requireLowercase  Boolean @default(true)
-  requireUppercase  Boolean @default(false)
-  requireSpecial    Boolean @default(false)
-  passwordExpiryDays Int    @default(90)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                    Int     @id @default(autoincrement())
+  minLength             Int     @default(14)
+  requireDigit          Boolean @default(true)
+  requireLowercase      Boolean @default(true)
+  requireUppercase      Boolean @default(false)
+  requireSpecial        Boolean @default(false)
+  passwordExpiryDays    Int     @default(90)
+  maxLoginAttempts      Int     @default(5)
+  lockoutDurationMinutes Int    @default(15)
+  sessionTimeoutMinutes Int     @default(30)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }
 
 model ActivityLog {

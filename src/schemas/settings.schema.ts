@@ -7,4 +7,7 @@ export const settingsSchema = z.object({
   requireLowercase: z.boolean().default(true),
   requireSpecial: z.boolean().default(false),
   passwordExpiryDays: z.number().min(1).max(365).default(90),
+  maxLoginAttempts: z.number().default(5),
+  lockoutDurationMinutes: z.number().default(15),
+  sessionTimeoutMinutes: z.number().default(30),
 });

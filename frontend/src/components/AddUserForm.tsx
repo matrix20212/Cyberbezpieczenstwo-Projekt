@@ -17,7 +17,7 @@ export default function AddUserForm({ reload }: Props) {
     const password = btoa(result.toString()).slice(0, 8);
     setPassword(password);
 
-    alert("Wygenerowane hasło: "+ password)
+    alert("Wygenerowane hasło: " + password);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -91,7 +91,7 @@ export default function AddUserForm({ reload }: Props) {
             onClick={generateOneTimePassword}
             title="Wygeneruj hasło jednorazowe"
           >
-            Genetuj
+            Generuj
           </button>
         </div>
 
@@ -99,7 +99,9 @@ export default function AddUserForm({ reload }: Props) {
           <select
             className="form-select"
             value={role}
-            onChange={(e) => setRole(e.target.value as "USER" | "ADMIN" | "MANAGER")}
+            onChange={(e) =>
+              setRole(e.target.value as "USER" | "ADMIN" | "MANAGER")
+            }
           >
             <option value="USER">USER</option>
             <option value="ADMIN">ADMIN</option>

@@ -3,14 +3,14 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import { loginSchema } from "../schemas/login.schema";
-import { validatePasswordAgainstPolicy, isInPasswordHistory } from "../utils/passwordPolicy";
+import {
+  validatePasswordAgainstPolicy,
+  isInPasswordHistory,
+} from "../utils/passwordPolicy";
 import { logActivity } from "../utils/logger";
 
 const prisma = new PrismaClient();
 const SECRET = process.env.JWT_SECRET || "changeme";
-
-const LOGIN_LIMIT = 3;
-const LOCK_DURATION_MINUTES = 15;
 
 export const authController = {
   async login(req: Request, res: Response) {
@@ -18,10 +18,20 @@ export const authController = {
     if (!parsed.success) return res.status(400).json(parsed.error.format());
 
     const { username, password } = parsed.data;
+
+    const settings = await prisma.settings.findFirst();
+    const LOGIN_LIMIT = settings?.maxLoginAttempts || 5;
+    const LOCK_DURATION_MINUTES = settings?.lockoutDurationMinutes || 15;
+
     const user = await prisma.user.findUnique({ where: { username } });
 
     if (!user) {
-      await logActivity(username, "login", false, "Niepoprawny login lub hasło");
+      await logActivity(
+        username,
+        "login",
+        false,
+        "Niepoprawny login lub hasło"
+      );
       return res.status(400).json({ error: "Login lub hasło niepoprawny" });
     }
 
@@ -32,14 +42,14 @@ export const authController = {
       await logActivity(username, "login", false, "Konto zablokowane");
       return res.status(403).json({
         error: `Konto zablokowane. Odblokowanie za ${minutes} min ${seconds} sek`,
-        blockedUntil: user.blockedUntil
+        blockedUntil: user.blockedUntil,
       });
     }
 
     if (user.blockedUntil && user.blockedUntil <= new Date()) {
       await prisma.user.update({
         where: { username },
-        data: { failedAttempts: 0, blockedUntil: null }
+        data: { failedAttempts: 0, blockedUntil: null },
       });
     }
 
@@ -62,28 +72,36 @@ export const authController = {
 
       await prisma.user.update({
         where: { username },
-        data: dataUpdate
+        data: dataUpdate,
       });
 
-      await logActivity(username, "login", false, `Niepoprawne hasło (próba ${failedAttempts})`);
+      await logActivity(
+        username,
+        "login",
+        false,
+        `Niepoprawne hasło (próba ${failedAttempts})`
+      );
       return res.status(400).json({ error: msg, blockedUntil });
     }
 
     await prisma.user.update({
       where: { username },
-      data: { failedAttempts: 0, blockedUntil: null }
+      data: { failedAttempts: 0, blockedUntil: null },
     });
 
-    const expired = user.passwordExpiresAt ? new Date() > user.passwordExpiresAt : false;
+    const expired = user.passwordExpiresAt
+      ? new Date() > user.passwordExpiresAt
+      : false;
 
+    const SESSION_TIMEOUT_MINUTES = settings?.sessionTimeoutMinutes || 30;
     const token = jwt.sign(
       {
         username: user.username,
         role: user.role,
-        mustChangePassword: user.mustChangePassword || expired
+        mustChangePassword: user.mustChangePassword || expired,
       },
       SECRET,
-      { expiresIn: "2h" }
+      { expiresIn: `${SESSION_TIMEOUT_MINUTES}m` }
     );
 
     await logActivity(username, "login", true, "Pomyślne logowanie");
@@ -91,7 +109,7 @@ export const authController = {
     return res.json({
       token,
       mustChangePassword: user.mustChangePassword || expired,
-      role: user.role
+      role: user.role,
     });
   },
 
@@ -106,7 +124,12 @@ export const authController = {
 
     const ok = await bcrypt.compare(oldPassword, user.password);
     if (!ok) {
-      await logActivity(username, "changePassword", false, "Niepoprawne stare hasło");
+      await logActivity(
+        username,
+        "changePassword",
+        false,
+        "Niepoprawne stare hasło"
+      );
       return res.status(400).json({ error: "Stare hasło niepoprawne" });
     }
 
@@ -119,8 +142,15 @@ export const authController = {
 
     const inHistory = await isInPasswordHistory(user.id, newPassword);
     if (inHistory) {
-      await logActivity(username, "changePassword", false, "Hasło było użyte wcześniej");
-      return res.status(400).json({ error: "Nowe hasło nie może być takie jak poprzednie" });
+      await logActivity(
+        username,
+        "changePassword",
+        false,
+        "Hasło było użyte wcześniej"
+      );
+      return res
+        .status(400)
+        .json({ error: "Nowe hasło nie może być takie jak poprzednie" });
     }
 
     const hash = await bcrypt.hash(newPassword, 10);
@@ -136,10 +166,17 @@ export const authController = {
           ),
         },
       }),
-      prisma.passwordHistory.create({ data: { userId: user.id, password: hash } }),
+      prisma.passwordHistory.create({
+        data: { userId: user.id, password: hash },
+      }),
     ]);
 
-    await logActivity(username, "changePassword", true, "Hasło zostało zmienione");
+    await logActivity(
+      username,
+      "changePassword",
+      true,
+      "Hasło zostało zmienione"
+    );
 
     return res.json({ message: "Hasło zmienione" });
   },

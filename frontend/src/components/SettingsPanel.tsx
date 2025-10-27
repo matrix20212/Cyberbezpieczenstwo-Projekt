@@ -7,6 +7,9 @@ export default function SettingsPanel({ reload }: { reload?: () => void }) {
   const [requireLowercase, setRequireLowercase] = useState(true);
   const [requireSpecial, setRequireSpecial] = useState(false);
   const [passwordExpiryDays, setPasswordExpiryDays] = useState(90);
+  const [maxLoginAttempts, setMaxLoginAttempts] = useState(5);
+  const [lockoutDurationMinutes, setLockoutDurationMinutes] = useState(15);
+  const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(30);
 
   const token = localStorage.getItem("token");
 
@@ -23,6 +26,9 @@ export default function SettingsPanel({ reload }: { reload?: () => void }) {
         setRequireLowercase(!!s.requireLowercase);
         setRequireSpecial(!!s.requireSpecial);
         setPasswordExpiryDays(s.passwordExpiryDays ?? 90);
+        setMaxLoginAttempts(s.maxLoginAttempts ?? 5);
+        setLockoutDurationMinutes(s.lockoutDurationMinutes ?? 15);
+        setSessionTimeoutMinutes(s.sessionTimeoutMinutes ?? 30);
       }
     })();
   }, []);
@@ -41,6 +47,9 @@ export default function SettingsPanel({ reload }: { reload?: () => void }) {
         requireLowercase,
         requireSpecial,
         passwordExpiryDays,
+        maxLoginAttempts,
+        lockoutDurationMinutes,
+        sessionTimeoutMinutes,
       }),
     });
     if (r.ok) {
@@ -125,6 +134,53 @@ export default function SettingsPanel({ reload }: { reload?: () => void }) {
           value={passwordExpiryDays}
           onChange={(e) => setPasswordExpiryDays(Number(e.target.value))}
         />
+      </div>
+
+      <hr className="my-3" />
+      <h5>Bezpieczeństwo logowania</h5>
+
+      <div className="mb-2">
+        <label className="form-label">Maksymalna liczba prób logowania</label>
+        <input
+          type="number"
+          className="form-control"
+          value={maxLoginAttempts}
+          onChange={(e) => setMaxLoginAttempts(Number(e.target.value))}
+          min="3"
+          max="10"
+        />
+        <small className="form-text text-muted">Zalecane: 3-5 prób</small>
+      </div>
+
+      <div className="mb-2">
+        <label className="form-label">Czas blokady konta (minuty)</label>
+        <input
+          type="number"
+          className="form-control"
+          value={lockoutDurationMinutes}
+          onChange={(e) => setLockoutDurationMinutes(Number(e.target.value))}
+          min="5"
+          max="60"
+        />
+        <small className="form-text text-muted">Zalecane: 15-30 minut</small>
+      </div>
+
+      <div className="mb-2">
+        <label className="form-label">
+          Automatyczne wylogowanie po bezczynności (minuty)
+        </label>
+        <input
+          type="number"
+          className="form-control"
+          value={sessionTimeoutMinutes}
+          onChange={(e) => setSessionTimeoutMinutes(Number(e.target.value))}
+          min="5"
+          max="120"
+        />
+        <small className="form-text text-muted">
+          Zalecane: 15-30 minut dla aplikacji standardowych, 2-5 minut dla
+          wrażliwych danych
+        </small>
       </div>
 
       <button className="btn btn-primary" onClick={save}>
