@@ -8,13 +8,40 @@ import {
   isInPasswordHistory,
 } from "../utils/passwordPolicy";
 import { logActivity } from "../utils/logger";
+import axios from "axios";
 
 const prisma = new PrismaClient();
 const SECRET = process.env.JWT_SECRET || "changeme";
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY;
+
+async function verifyCaptcha(token: string) {
+  if (!RECAPTCHA_SECRET) {
+    console.error("RECAPTCHA_SECRET_KEY is not set in .env file");
+    return false;
+  }
+  try {
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${token}`
+    );
+    return response.data.success;
+  } catch (error) {
+    console.error("Error verifying reCAPTCHA:", error);
+    return false;
+  }
+}
 
 export const authController = {
   async login(req: Request, res: Response) {
-    const parsed = loginSchema.safeParse(req.body);
+    const { captcha, ...loginData } = req.body;
+    if (!captcha) {
+      return res.status(400).json({ error: "reCAPTCHA not completed" });
+    }
+    const isCaptchaValid = await verifyCaptcha(captcha);
+    if (!isCaptchaValid) {
+      return res.status(400).json({ error: "Invalid reCAPTCHA" });
+    }
+
+    const parsed = loginSchema.safeParse(loginData);
     if (!parsed.success) return res.status(400).json(parsed.error.format());
 
     const { username, password } = parsed.data;
@@ -114,9 +141,17 @@ export const authController = {
   },
 
   async changePassword(req: Request, res: Response) {
-    const { username, oldPassword, newPassword } = req.body;
+    const { username, oldPassword, newPassword, captcha } = req.body;
     if (!username || !oldPassword || !newPassword)
       return res.status(400).json({ error: "Brak danych" });
+
+    if (!captcha) {
+      return res.status(400).json({ error: "reCAPTCHA not completed" });
+    }
+    const isCaptchaValid = await verifyCaptcha(captcha);
+    if (!isCaptchaValid) {
+      return res.status(400).json({ error: "Invalid reCAPTCHA" });
+    }
 
     const user = await prisma.user.findUnique({ where: { username } });
     if (!user)

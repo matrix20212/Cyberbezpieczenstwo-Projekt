@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -6,6 +7,7 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [blockedUntil, setBlockedUntil] = useState<Date | null>(null);
   const [countdown, setCountdown] = useState<string>("");
+  const [captcha, setCaptcha] = useState<string | null>(null);
 
   useEffect(() => {
     if (!blockedUntil) return;
@@ -28,10 +30,15 @@ export default function LoginForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    if (!captcha) {
+      setError("Proszę potwierdzić, że nie jesteś robotem.");
+      return;
+    }
+
     const res = await fetch("http://localhost:3000/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, captcha }),
     });
 
     const data = await res.json();
@@ -74,6 +81,12 @@ export default function LoginForm() {
             className="form-control"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <div className="mb-3 d-flex justify-content-center">
+          <ReCAPTCHA
+            sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+            onChange={setCaptcha}
           />
         </div>
         <button className="btn btn-primary w-100" type="submit" disabled={!!blockedUntil}>

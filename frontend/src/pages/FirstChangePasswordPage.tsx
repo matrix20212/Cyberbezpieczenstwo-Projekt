@@ -1,21 +1,38 @@
 import { useState } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function FirstChangePasswordPage() {
   const [oldPassword, setOld] = useState("");
   const [newPass, setNew] = useState("");
   const [newPass2, setNew2] = useState("");
+  const [captcha, setCaptcha] = useState<string | null>(null);
   const token = localStorage.getItem("token");
 
   async function handle(e: React.FormEvent) {
     e.preventDefault();
-    if (newPass !== newPass2) { alert("Hasła różnią się"); return; }
+    if (newPass !== newPass2) {
+      alert("Hasła różnią się");
+      return;
+    }
+    if (!captcha) {
+      alert("Proszę potwierdzić, że nie jesteś robotem.");
+      return;
+    }
 
     const username = JSON.parse(atob((token || "").split(".")[1])).username;
-    
+
     const res = await fetch("http://localhost:3000/auth/change-password", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ username, oldPassword, newPassword: newPass })
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        username,
+        oldPassword,
+        newPassword: newPass,
+        captcha,
+      }),
     });
 
     if (res.ok) {
@@ -36,15 +53,39 @@ export default function FirstChangePasswordPage() {
           <form onSubmit={handle}>
             <div className="mb-3">
               <label>Stare hasło</label>
-              <input type="password" className="form-control" value={oldPassword} onChange={e => setOld(e.target.value)} required/>
+              <input
+                type="password"
+                className="form-control"
+                value={oldPassword}
+                onChange={(e) => setOld(e.target.value)}
+                required
+              />
             </div>
             <div className="mb-3">
               <label>Nowe hasło</label>
-              <input type="password" className="form-control" value={newPass} onChange={e => setNew(e.target.value)} required/>
+              <input
+                type="password"
+                className="form-control"
+                value={newPass}
+                onChange={(e) => setNew(e.target.value)}
+                required
+              />
             </div>
             <div className="mb-3">
               <label>Powtórz nowe hasło</label>
-              <input type="password" className="form-control" value={newPass2} onChange={e => setNew2(e.target.value)} required/>
+              <input
+                type="password"
+                className="form-control"
+                value={newPass2}
+                onChange={(e) => setNew2(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-3 d-flex justify-content-center">
+              <ReCAPTCHA
+                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                onChange={setCaptcha}
+              />
             </div>
             <button className="btn btn-primary w-100">Zmień hasło</button>
           </form>
