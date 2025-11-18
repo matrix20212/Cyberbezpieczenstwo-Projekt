@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
+import ImageCaptcha from "./ImageCaptcha";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -7,7 +7,7 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [blockedUntil, setBlockedUntil] = useState<Date | null>(null);
   const [countdown, setCountdown] = useState<string>("");
-  const [captcha, setCaptcha] = useState<string | null>(null);
+  const [captchaVerified, setCaptchaVerified] = useState<boolean>(false);
 
   useEffect(() => {
     if (!blockedUntil) return;
@@ -27,18 +27,28 @@ export default function LoginForm() {
     return () => clearInterval(interval);
   }, [blockedUntil]);
 
+  const handleCaptchaVerify = (isVerified: boolean): void => {
+    setCaptchaVerified(isVerified);
+    if (!isVerified) {
+      setError("Captcha verification failed. Please try again.");
+    } else {
+      setError("");
+    }
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!captcha) {
-      setError("Proszę potwierdzić, że nie jesteś robotem.");
+    // Check if captcha is verified
+    if (!captchaVerified) {
+      setError("Please complete the captcha verification first.");
       return;
     }
 
     const res = await fetch("http://localhost:3000/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, captcha }),
+      body: JSON.stringify({ username, password }),
     });
 
     const data = await res.json();
@@ -72,6 +82,7 @@ export default function LoginForm() {
             className="form-control"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            required
           />
         </div>
         <div className="mb-3">
@@ -81,21 +92,28 @@ export default function LoginForm() {
             className="form-control"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
         </div>
-        <div className="mb-3 d-flex justify-content-center">
-          <ReCAPTCHA
-            sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-            onChange={setCaptcha}
-          />
+        <div className="mb-3">
+          <ImageCaptcha onVerify={handleCaptchaVerify} />
         </div>
-        <button className="btn btn-primary w-100" type="submit" disabled={!!blockedUntil}>
+        <button
+          className="btn btn-primary w-100"
+          type="submit"
+          disabled={!!blockedUntil || !captchaVerified}
+        >
           Zaloguj
         </button>
       </form>
       {error && (
         <p className="text-danger mt-3 text-center">
           {error} {countdown && ` - odblokowanie za ${countdown}`}
+        </p>
+      )}
+      {!captchaVerified && (
+        <p className="text-warning mt-2 text-center small">
+          ⚠️ Complete captcha verification to enable login
         </p>
       )}
     </div>

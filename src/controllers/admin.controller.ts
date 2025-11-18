@@ -344,7 +344,6 @@ export const adminController = {
     const x = Math.floor(Math.random() * 100) + 1;
     const result = a / x;
 
-    // przekształcenie wyniku w ciąg znaków
     const otpPlain = Math.abs(result).toString(36).substring(2, 8);
     const hashed = await bcrypt.hash(otpPlain, 10);
 
