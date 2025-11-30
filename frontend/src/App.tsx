@@ -11,6 +11,7 @@ import AdminPage from "./pages/AdminPage";
 import UserPage from "./pages/UserPage";
 import ChangePasswordPage from "./pages/FirstChangePasswordPage";
 import SessionHandler from "./components/SessionHandler";
+import FileEditorPage from "./pages/FileEditorPage";
 
 interface TokenPayload {
   username: string;
@@ -66,6 +67,9 @@ export default function App() {
               )
             }
           />
+
+          <Route path="/editor" element={<FileEditorPage />} />
+
         </Routes>
       </SessionHandler>
     </Router>

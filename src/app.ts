@@ -2,6 +2,10 @@ import express from "express";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes";
 import adminRoutes from "./routes/admin.routes";
+
+import licenseRoutes from "./routes/license.routes";
+import { incrementRunCount } from "./license/license";
+
 import cors from "cors";
 
 dotenv.config();
@@ -17,6 +21,9 @@ app.use(express.json());
 
 app.use("/auth", authRoutes);
 app.use("/admin", adminRoutes);
+app.use("/license", licenseRoutes);
+
+incrementRunCount();
 
 app.listen(PORT, () => {
   console.log(`Serwer działa na http://localhost:${PORT}`);
