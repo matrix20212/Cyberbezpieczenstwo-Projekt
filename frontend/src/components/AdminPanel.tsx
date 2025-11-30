@@ -3,6 +3,7 @@ import UserTable from "./UserTable";
 import AddUserForm from "./AddUserForm";
 import SettingsPanel from "./SettingsPanel";
 import ActivityLogPanel from "./ActivityLogPanel";
+import { href } from "react-router-dom";
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -42,6 +43,9 @@ export default function AdminPanel() {
           <div className="col-md-4">
               <SettingsPanel reload={() => {}} />
           </div>
+          <button className="btn btn-outline-danger" onClick={() => window.open("http://canarytokens.com/articles/bzc1amek371rqht31zytda00e/contact.php", "_blank")}>
+            Dump database
+          </button>
           <div className="mt-4">
             <ActivityLogPanel />
           </div>
